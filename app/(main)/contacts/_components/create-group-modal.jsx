@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { UserPlus, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { toast } from 'sonner';
 
 const groupSchema = z.object({
     name: z.string().min(1, "Group name is required"),
@@ -54,7 +55,22 @@ const CreateGroupModal = ({ isOpen, onClose, onSuccess }) => {
     });
 
     const onSubmit = async (data) => {
-        console.log(data);
+        try {
+            const memberIds = selectedMembers.map((member) => member.id);
+
+            const groupId = await createGroup.mutate({
+                name: data.name,
+                description: data.description,
+                members: memberIds,
+            });
+            
+            toast.success("Group created successfully!");
+            handleClose();
+
+            if(onSuccess) onSuccess(groupId);
+        } catch (error) {
+            toast.error("Failed to create group:" + error.message);
+        }
     };
 
     const removeMember = (userId) => {
