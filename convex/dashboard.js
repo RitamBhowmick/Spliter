@@ -93,12 +93,13 @@ export const getTotalSpent = query({
 
         const expenses = await ctx.db
             .query("expenses")
-            .withIndex("by_date", (q) => q.gte("date", startOfYear));
+            .withIndex("by_date", (q) => q.gte("date", startOfYear))
+            .collect();
 
             const userExpenses = expenses.filter(
                 (expense) =>
                     expense.paidByUserId === user._id ||
-                    expense.splits.some((split) => split.userId === user._id)
+                    expense.splits?.some((split) => split.userId === user._id)
             );
 
             let totalSpent = 0;
@@ -161,7 +162,7 @@ export const getMonthlySpending = query({
             }
         });
 
-        const result = Object.entries(monthlyTotals).map(([monthlyTotals, total]) => ({
+        const result = Object.entries(monthlyTotals).map(([month, total]) => ({
             month: parseInt(month),
             total,
         }));
